@@ -126,11 +126,11 @@ describe('App', () => {
     expect(displayedTotal()).toBe('$54.37');
   });
 
-  it('shows an error instead of a stale total when a quote fails', async () => {
+  it('shows an error instead of a stale total and hints when a quote fails', async () => {
     const { answerQuote } = stubServer();
     render(<App />);
     await addRedWidget();
-    await answerQuote(1, json(quoteWithTotal(3790)));
+    await answerQuote(1, json(QUOTE_WITH_HINTS));
     expect(displayedTotal()).toBe('$37.90');
 
     await addRedWidget();
@@ -140,7 +140,10 @@ describe('App', () => {
     );
 
     expect(screen.getByRole('alert').textContent).toContain('Something went wrong');
+    // The hints described the previous basket, so they go with its total.
     expect(displayedTotal()).toBeUndefined();
+    expect(screen.queryByText(FOOTNOTE)).toBeNull();
+    expect(screen.queryByText(NUDGE)).toBeNull();
   });
 
   it('tells the user when the server cannot be reached', async () => {
@@ -168,22 +171,6 @@ describe('App', () => {
 
     expect(screen.getByText(FOOTNOTE)).toBeDefined();
     expect(screen.getByText(NUDGE)).toBeDefined();
-  });
-
-  it('removes the hints when the next quote fails, so they never describe another basket', async () => {
-    const { answerQuote } = stubServer();
-    render(<App />);
-    await addRedWidget();
-    await answerQuote(1, json(QUOTE_WITH_HINTS));
-
-    await addRedWidget();
-    await answerQuote(
-      2,
-      json({ error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' } }, 500),
-    );
-
-    expect(screen.queryByText(FOOTNOTE)).toBeNull();
-    expect(screen.queryByText(NUDGE)).toBeNull();
   });
 
   it('stamps free delivery only on a quote for a non-empty basket', async () => {
