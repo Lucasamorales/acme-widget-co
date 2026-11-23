@@ -37,7 +37,7 @@ const QUOTE_WITH_HINTS: QuoteResponse = {
   offerSavings: [{ productCode: 'R01', saving: 1648 }],
 };
 
-const FOOTNOTE = '$17.05 more and delivery drops to $2.95.';
+const FOOTNOTE = '$17.05 more and delivery is $2.95.';
 const NUDGE = 'Add 1 more Red Widget to save $16.48';
 
 function json(body: unknown, status = 200): Response {

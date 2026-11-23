@@ -152,10 +152,9 @@ interface DeliveryFootnoteProps {
 
 /** Explains the asterisk on the delivery line: how much more changes the charge. */
 function DeliveryFootnote({ nextBand }: DeliveryFootnoteProps) {
+  // "is", not "drops to": the domain does not require the next band to be cheaper.
   const outcome =
-    nextBand.charge === 0
-      ? 'delivery is free'
-      : `delivery drops to ${formatCents(nextBand.charge)}`;
+    nextBand.charge === 0 ? 'delivery is free' : `delivery is ${formatCents(nextBand.charge)}`;
   return (
     <p className="footnote">
       {formatCents(nextBand.amountToReach)} more and {outcome}.
