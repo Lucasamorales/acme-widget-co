@@ -118,10 +118,13 @@ function Totals({ quote, catalogue }: TotalsProps) {
             </span>
           </dd>
         </dl>
-        {/* Totals only render for a non-empty basket, so a zero charge here means
-            the order reached free delivery. Hidden from screen readers because the
-            Delivery row already says "Free". */}
-        {delivery === 0 && (
+        {/* The quote shown can be the previous one while a new one loads. After the
+            first Add that is the empty basket's quote, which also has delivery 0,
+            so `subtotal > 0` stops the stamp from landing on an order that has not
+            reached free delivery. Checking the quote, not `isLoading`, keeps the
+            stamp mounted (and not slamming again) while re-quoting in the free band.
+            Hidden from screen readers because the Delivery row already says "Free". */}
+        {subtotal > 0 && delivery === 0 && (
           <p className="free-stamp" aria-hidden="true">
             Free
             <br />

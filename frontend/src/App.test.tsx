@@ -88,6 +88,15 @@ function displayedTotal(): string | undefined {
   return screen.queryByText('Total')?.nextElementSibling?.textContent ?? undefined;
 }
 
+/**
+ * The free-delivery stamp. Found by class because it is hidden from
+ * assistive technology (the Delivery row already says "Free"), so it has no
+ * role or accessible name to query.
+ */
+function freeDeliveryStamp(): Element | null {
+  return document.querySelector('.free-stamp');
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
@@ -175,5 +184,19 @@ describe('App', () => {
 
     expect(screen.queryByText(FOOTNOTE)).toBeNull();
     expect(screen.queryByText(NUDGE)).toBeNull();
+  });
+
+  it('stamps free delivery only on a quote for a non-empty basket', async () => {
+    const { answerQuote } = stubServer();
+    render(<App />);
+    await answerQuote(0, json(quoteWithTotal(0))); // the empty basket's quote: delivery 0
+    await addRedWidget();
+
+    // Quote 1 is still pending, so the totals show the empty basket's quote.
+    expect(freeDeliveryStamp()).toBeNull();
+
+    await answerQuote(1, json(quoteWithTotal(9827)));
+
+    expect(freeDeliveryStamp()).not.toBeNull();
   });
 });
