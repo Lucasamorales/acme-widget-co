@@ -30,7 +30,7 @@ export function ProductList({ products, quantities, onAdd }: ProductListProps) {
             return (
               <li key={product.code} className="ticket">
                 <div className="ticket-stub">
-                  {/* Keyed on the quantity so each add remounts it and replays the animation. */}
+                  {/* Keyed on the quantity so each change remounts it and replays the animation. */}
                   <div
                     key={quantity}
                     className="swatch"

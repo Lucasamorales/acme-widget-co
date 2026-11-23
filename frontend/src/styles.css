@@ -280,7 +280,7 @@ button:focus-visible {
   --swatch: var(--widget-blue);
 }
 
-/* The swatch is remounted on every quantity change, so this replays on each add. */
+/* The swatch is remounted on every quantity change, so this replays on each add and remove. */
 .swatch[data-in-basket='true'] {
   animation: thunk 380ms var(--ease-spring);
 }
