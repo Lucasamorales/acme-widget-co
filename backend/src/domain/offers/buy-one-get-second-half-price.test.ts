@@ -27,4 +27,9 @@ describe('buyOneGetSecondHalfPrice', () => {
   it('ignores other products', () => {
     expect(offer.discount([RED, BLUE, BLUE])).toBe(0);
   });
+
+  it('is advertised on its own product only, with a customer-facing label', () => {
+    expect(offer.productCodes).toEqual(['R01']);
+    expect(offer.label).toBe('Buy one, get the second half price');
+  });
 });

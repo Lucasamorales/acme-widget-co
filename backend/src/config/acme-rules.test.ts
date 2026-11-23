@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deliveryCharge } from '../domain/index.js';
+import { deliveryCharge, nextDeliveryBand } from '../domain/index.js';
 import { ACME_DELIVERY_TIERS, createAcmeBasket } from './acme-rules.js';
 
 /** Prices a list of product codes with Acme's rules, in cents. */
@@ -33,11 +33,21 @@ describe('Acme rules: examples from the brief', () => {
 // bands are checked directly.
 describe('Acme rules: delivery bands', () => {
   it.each([
-    { amount: 4999, charge: 495 },
-    { amount: 5000, charge: 295 }, // exactly $50 is not "under $50"
-    { amount: 8999, charge: 295 },
-    { amount: 9000, charge: 0 }, // exactly $90 is free
-  ])('an order of $amount cents pays $charge cents delivery', ({ amount, charge }) => {
+    { amount: 4999, charge: 495, next: { amountToReach: 1, charge: 295 } },
+    { amount: 5000, charge: 295, next: { amountToReach: 4000, charge: 0 } }, // exactly $50 is not "under $50"
+    { amount: 8999, charge: 295, next: { amountToReach: 1, charge: 0 } },
+    { amount: 9000, charge: 0, next: undefined }, // exactly $90 is free
+  ])('an order of $amount cents pays $charge cents delivery', ({ amount, charge, next }) => {
     expect(deliveryCharge(amount, ACME_DELIVERY_TIERS)).toBe(charge);
+    expect(nextDeliveryBand(amount, ACME_DELIVERY_TIERS)).toEqual(next);
+  });
+});
+
+describe('Acme rules: offer savings', () => {
+  it('tells a customer with one red widget that a second saves 1648', () => {
+    const basket = createAcmeBasket();
+    basket.add('R01');
+
+    expect(basket.offerSavingsOnNextUnit()).toEqual([{ productCode: 'R01', saving: 1648 }]);
   });
 });

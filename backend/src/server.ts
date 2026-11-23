@@ -7,13 +7,18 @@
 
 import { existsSync } from 'node:fs';
 import { createApp } from './api/app.js';
-import { ACME_CATALOGUE, createAcmeBasket } from './config/acme-rules.js';
+import { ACME_CATALOGUE, ACME_OFFERS, createAcmeBasket } from './config/acme-rules.js';
 import { loadEnv } from './config/env.js';
 
 const env = loadEnv();
 const staticDir = existsSync(env.STATIC_DIR) ? env.STATIC_DIR : undefined;
 
-const app = createApp({ catalogue: ACME_CATALOGUE, createBasket: createAcmeBasket, staticDir });
+const app = createApp({
+  catalogue: ACME_CATALOGUE,
+  offers: ACME_OFFERS,
+  createBasket: createAcmeBasket,
+  staticDir,
+});
 
 const server = app.listen(env.PORT, (error) => {
   if (error) {

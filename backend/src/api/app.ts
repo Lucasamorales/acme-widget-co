@@ -1,6 +1,6 @@
 import express from 'express';
 import { z } from 'zod';
-import type { Basket, Product } from '../domain/index.js';
+import type { Basket, Offer, Product } from '../domain/index.js';
 import type { ProductsResponse, QuoteRequest, QuoteResponse } from './contract.js';
 import { errorHandler, notFound } from './error-handler.js';
 
@@ -11,6 +11,11 @@ import { errorHandler, notFound } from './error-handler.js';
  */
 export interface AppDependencies {
   readonly catalogue: readonly Product[];
+  /**
+   * Offers to advertise next to their products. Pricing uses the offers
+   * inside the basket from `createBasket`; pass the same list to both.
+   */
+  readonly offers: readonly Offer[];
   /** Returns a new, empty basket for each quote. */
   readonly createBasket: () => Basket;
   /** Folder of the built frontend to serve. Omit to serve the API only. */
@@ -31,6 +36,7 @@ const quoteRequestSchema = z.object({
  */
 export function createApp({
   catalogue,
+  offers,
   createBasket,
   staticDir,
 }: AppDependencies): express.Express {
@@ -44,7 +50,14 @@ export function createApp({
 
   app.get('/api/products', (_req, res) => {
     // Copy only the contract's fields, so new domain fields are never exposed by accident.
-    const products = catalogue.map(({ code, name, price }) => ({ code, name, price }));
+    const products = catalogue.map(({ code, name, price }) => ({
+      code,
+      name,
+      price,
+      offerLabels: offers
+        .filter((offer) => offer.productCodes.includes(code))
+        .map((offer) => offer.label),
+    }));
     const body: ProductsResponse = { products };
     res.json(body);
   });
@@ -59,8 +72,20 @@ export function createApp({
 
     // Copy the fields into a literal: TypeScript only rejects extra
     // properties on literals, so this stops `items` leaking into the response.
-    const { subtotal, discount, delivery, total } = basket.summary();
-    const body: QuoteResponse = { subtotal, discount, delivery, total };
+    const { subtotal, discount, delivery, total, nextDeliveryBand } = basket.summary();
+    const body: QuoteResponse = {
+      subtotal,
+      discount,
+      delivery,
+      total,
+      // JSON has no `undefined`, so the contract says null.
+      nextDeliveryBand: nextDeliveryBand
+        ? { amountToReach: nextDeliveryBand.amountToReach, charge: nextDeliveryBand.charge }
+        : null,
+      offerSavings: basket
+        .offerSavingsOnNextUnit()
+        .map(({ productCode, saving }) => ({ productCode, saving })),
+    };
     res.json(body);
   });
 

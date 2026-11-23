@@ -16,6 +16,8 @@ export interface ProductDto {
   readonly code: string;
   readonly name: string;
   readonly price: number;
+  /** Labels of the offers advertised on this product; empty when there are none. */
+  readonly offerLabels: readonly string[];
 }
 
 /** Response of `GET /api/products`. */
@@ -28,12 +30,31 @@ export interface QuoteRequest {
   readonly items: readonly string[];
 }
 
+/** The delivery band after the one the order is in. */
+export interface NextDeliveryBandDto {
+  /** How much more the order, after offers, must reach to enter the band. */
+  readonly amountToReach: number;
+  /** Delivery charge in that band. */
+  readonly charge: number;
+}
+
+/** A product whose next unit would cost less because of an offer. */
+export interface OfferSavingDto {
+  readonly productCode: string;
+  /** How much one more unit would save. */
+  readonly saving: number;
+}
+
 /** Response of `POST /api/quote`. */
 export interface QuoteResponse {
   readonly subtotal: number;
   readonly discount: number;
   readonly delivery: number;
   readonly total: number;
+  /** `null` when the basket is empty or already in the last delivery band. */
+  readonly nextDeliveryBand: NextDeliveryBandDto | null;
+  /** Empty when no offer would make the next unit of any product cheaper. */
+  readonly offerSavings: readonly OfferSavingDto[];
 }
 
 /** Machine-readable error codes. Clients branch on these, never on messages. */

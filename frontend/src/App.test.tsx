@@ -5,14 +5,21 @@ import { App } from './App';
 
 const PRODUCTS: ProductsResponse = {
   products: [
-    { code: 'R01', name: 'Red Widget', price: 3295 },
-    { code: 'B01', name: 'Blue Widget', price: 795 },
+    { code: 'R01', name: 'Red Widget', price: 3295, offerLabels: [] },
+    { code: 'B01', name: 'Blue Widget', price: 795, offerLabels: [] },
   ],
 };
 
 /** A quote whose total is easy to recognise in the page. */
 function quoteWithTotal(total: number): QuoteResponse {
-  return { subtotal: total, discount: 0, delivery: 0, total };
+  return {
+    subtotal: total,
+    discount: 0,
+    delivery: 0,
+    total,
+    nextDeliveryBand: null,
+    offerSavings: [],
+  };
 }
 
 function json(body: unknown, status = 200): Response {

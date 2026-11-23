@@ -9,6 +9,10 @@ import type { Product } from '../product.js';
  * implement this interface; `Basket` does not need to change.
  */
 export interface Offer {
+  /** What the customer is told, e.g. `"Buy one, get the second half price"`. */
+  readonly label: string;
+  /** Codes of the products the offer is advertised on. */
+  readonly productCodes: readonly string[];
   /**
    * Works out how much this offer takes off the basket.
    *

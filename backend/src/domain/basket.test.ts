@@ -19,8 +19,15 @@ const TIERS: readonly DeliveryTier[] = [
 
 /** An offer that always takes off the same amount. */
 function fixedDiscount(amount: number): Offer {
-  return { discount: () => amount };
+  return { label: 'Fixed discount', productCodes: [], discount: () => amount };
 }
+
+/** An offer that takes 100 off every unit of A after the first. */
+const EVERY_EXTRA_A_SAVES_100: Offer = {
+  label: 'Extra A saves 100',
+  productCodes: ['A'],
+  discount: (items) => Math.max(0, items.filter((item) => item.code === 'A').length - 1) * 100,
+};
 
 describe('Basket', () => {
   it('costs nothing when empty, with no delivery charge', () => {
@@ -76,6 +83,54 @@ describe('Basket', () => {
     basket.add('A');
 
     expect(() => basket.total()).toThrow('An offer returned an invalid discount: 1647.5');
+  });
+});
+
+describe('Basket next delivery band', () => {
+  it('measures the distance from the amount after offers', () => {
+    const basket = new Basket(CATALOGUE, TIERS, [fixedDiscount(200)]);
+    basket.add('A');
+    basket.add('B');
+
+    // 1100 - 200 = 900, so 100 more reaches the free band.
+    expect(basket.summary().nextDeliveryBand).toEqual({ amountToReach: 100, charge: 0 });
+  });
+
+  it('has none for an empty basket, which pays no delivery', () => {
+    const basket = new Basket(CATALOGUE, TIERS, []);
+
+    expect(basket.summary().nextDeliveryBand).toBeUndefined();
+  });
+
+  it('has none once the order is in the last band', () => {
+    const basket = new Basket(CATALOGUE, TIERS, []);
+    basket.add('A');
+    basket.add('B');
+
+    expect(basket.summary().nextDeliveryBand).toBeUndefined();
+  });
+});
+
+describe('Basket offer savings on the next unit', () => {
+  it.each([
+    { codes: [], savings: [] }, // the first A saves nothing
+    { codes: ['B'], savings: [] },
+    { codes: ['A'], savings: [{ productCode: 'A', saving: 100 }] },
+    { codes: ['A', 'A'], savings: [{ productCode: 'A', saving: 100 }] },
+  ])('with $codes in the basket returns $savings', ({ codes, savings }) => {
+    const basket = new Basket(CATALOGUE, TIERS, [EVERY_EXTRA_A_SAVES_100]);
+    codes.forEach((code) => basket.add(code));
+
+    expect(basket.offerSavingsOnNextUnit()).toEqual(savings);
+  });
+
+  it('does not change the basket', () => {
+    const basket = new Basket(CATALOGUE, TIERS, [EVERY_EXTRA_A_SAVES_100]);
+    basket.add('A');
+
+    basket.offerSavingsOnNextUnit();
+
+    expect(basket.summary().subtotal).toBe(600);
   });
 });
 

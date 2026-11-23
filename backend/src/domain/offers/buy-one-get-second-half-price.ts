@@ -19,6 +19,8 @@ import type { Offer } from './offer.js';
  */
 export function buyOneGetSecondHalfPrice(productCode: string): Offer {
   return {
+    label: 'Buy one, get the second half price',
+    productCodes: [productCode],
     discount(items) {
       const units = items.filter((item) => item.code === productCode);
       const pairs = Math.floor(units.length / 2);

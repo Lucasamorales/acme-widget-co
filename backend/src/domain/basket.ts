@@ -1,4 +1,9 @@
-import { deliveryCharge, type DeliveryTier } from './delivery.js';
+import {
+  deliveryCharge,
+  type DeliveryTier,
+  nextDeliveryBand,
+  type NextDeliveryBand,
+} from './delivery.js';
 import { UnknownProductError } from './errors.js';
 import { type Cents, isCents } from './money.js';
 import type { Offer } from './offers/offer.js';
@@ -14,6 +19,20 @@ export interface BasketSummary {
   readonly delivery: Cents;
   /** Amount to pay: `subtotal - discount + delivery`. */
   readonly total: Cents;
+  /**
+   * The next delivery band above the amount after offers, so the customer
+   * can be told how much more to spend. `undefined` when the basket is
+   * empty or already in the last band.
+   */
+  readonly nextDeliveryBand: NextDeliveryBand | undefined;
+}
+
+/** A product whose next unit would cost less because of an offer. */
+export interface OfferSaving {
+  /** Code of the product to add. */
+  readonly productCode: string;
+  /** How much more the offers would take off if one more unit were added. */
+  readonly saving: Cents;
 }
 
 /**
@@ -118,9 +137,58 @@ export class Basket {
    */
   summary(): BasketSummary {
     const subtotal = this.items.reduce((sum, item) => sum + item.price, 0);
+    const discount = this.offerDiscount(this.items);
+    const afterDiscount = subtotal - discount;
 
-    const discount = this.offers.reduce((sum, offer) => {
-      const amount = offer.discount(this.items);
+    // An empty basket has nothing to deliver, so it pays no delivery and
+    // has no band to move towards.
+    if (this.items.length === 0) {
+      return { subtotal, discount, delivery: 0, total: afterDiscount, nextDeliveryBand: undefined };
+    }
+
+    // Delivery depends on the amount after offers, not the full price: the
+    // brief's R01 + R01 example only totals $54.37 this way. The next band
+    // is measured from the same amount, so the hint and the charge agree.
+    const delivery = deliveryCharge(afterDiscount, this.deliveryTiers);
+    return {
+      subtotal,
+      discount,
+      delivery,
+      total: afterDiscount + delivery,
+      nextDeliveryBand: nextDeliveryBand(afterDiscount, this.deliveryTiers),
+    };
+  }
+
+  /**
+   * Lists the products whose next unit would be cheaper because of an
+   * offer, and by how much: with one red widget in the basket, one more
+   * saves 1648.
+   *
+   * Works for any offer, because it compares the offers' discount with and
+   * without one more unit instead of knowing how each offer works.
+   *
+   * @returns One entry per product where one more unit raises the
+   * discount, in catalogue order. Empty when no offer would apply.
+   * @throws {RangeError} If an offer returns a discount that is not whole cents.
+   */
+  offerSavingsOnNextUnit(): readonly OfferSaving[] {
+    const current = this.offerDiscount(this.items);
+    return [...this.catalogue.values()]
+      .map((product) => ({
+        productCode: product.code,
+        saving: this.offerDiscount([...this.items, product]) - current,
+      }))
+      .filter(({ saving }) => saving > 0);
+  }
+
+  /**
+   * Adds up the discounts every offer gives for `items`.
+   *
+   * @throws {RangeError} If an offer returns a discount that is not whole cents.
+   */
+  private offerDiscount(items: readonly Product[]): Cents {
+    return this.offers.reduce((sum, offer) => {
+      const amount = offer.discount(items);
       // Offers are plug-ins. One returning e.g. 1647.5 would quietly break
       // the whole-cents rule and every total after it.
       if (!isCents(amount)) {
@@ -128,15 +196,5 @@ export class Basket {
       }
       return sum + amount;
     }, 0);
-
-    const afterDiscount = subtotal - discount;
-
-    // Delivery depends on the amount after offers, not the full price: the
-    // brief's R01 + R01 example only totals $54.37 this way. An empty basket
-    // has nothing to deliver, so it pays no delivery.
-    const delivery =
-      this.items.length === 0 ? 0 : deliveryCharge(afterDiscount, this.deliveryTiers);
-
-    return { subtotal, discount, delivery, total: afterDiscount + delivery };
   }
 }
