@@ -118,16 +118,15 @@ The brief leaves some rules open. These are the choices made, and why. Where the
 ## How it is built
 
 ```mermaid
-flowchart LR
-  subgraph Browser["Browser (React)"]
+flowchart TB
+  subgraph Browser["Browser · React"]
     UI["Components<br/>display only"] --> Hooks["Hooks<br/>basket state, requests"]
     Hooks --> Client["api/client.ts<br/>the only fetch calls"]
   end
-  Client -- "POST /api/quote" --> API
-  subgraph Server["Server (Node + Express)"]
-    API["api/<br/>checks request shape"] --> Domain["domain/<br/>Basket: all pricing"]
-    Rules["config/acme-rules.ts<br/>prices, bands, offers"] --> Domain
+  subgraph Server["Server · Node + Express"]
+    API["api/<br/>checks request shape"] --> Domain["domain/<br/>Basket: all pricing,<br/>with Acme's rules from config/"]
   end
+  Client -- "POST /api/quote" --> API
 ```
 
 What happens when someone clicks **Add**:
