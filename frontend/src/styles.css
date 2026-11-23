@@ -1,15 +1,15 @@
-/* Till slip design. Tokens first; every colour, font and motion value used below comes from here. */
+/* Till slip design. Tokens first: every colour and font used below comes from here. */
 :root {
   --counter: #e6e1d5; /* page background: the shop counter the receipt sits on */
   --paper: #fffdf7;
   --swatch-card: #ffffff;
   --ink: #1d1b16;
-  --ink-muted: #6b665a;
+  --ink-muted: #635e53; /* 4.9:1 on the counter, 6.3:1 on paper (WCAG AA) */
   --ink-soft: #45423a;
   --rule-soft: #cfc8b8;
   --offer: #c8312a;
   --offer-strong: #a3261f;
-  --success: #2f8f4e;
+  --success: #2a8046; /* darker than --widget-green so stamp text reaches 4.8:1 */
   --widget-red: #d8392b;
   --widget-green: #2f8f4e;
   --widget-blue: #2f5bea;
@@ -18,8 +18,9 @@
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --radius-ticket: 4px;
   --radius-control: 2px;
-  --shadow-ticket: 0 1px 0 var(--rule-soft), 0 12px 24px -20px rgb(29 27 22 / 60%);
-  --shadow-receipt: drop-shadow(0 18px 18px rgb(29 27 22 / 18%));
+  --shadow-ticket:
+    0 1px 0 var(--rule-soft), 0 12px 24px -20px color-mix(in srgb, var(--ink) 60%, transparent);
+  --shadow-receipt: drop-shadow(0 18px 18px color-mix(in srgb, var(--ink) 18%, transparent));
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   font-family: var(--font-mono);
@@ -110,7 +111,7 @@ button {
 }
 
 button:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--ink) 40%, transparent);
+  outline: 3px solid var(--ink);
   outline-offset: 2px;
 }
 
@@ -258,7 +259,7 @@ button:focus-visible {
   background: var(--swatch-card);
   box-shadow:
     0 1px 0 var(--rule-soft),
-    0 8px 14px -8px rgb(29 27 22 / 45%);
+    0 8px 14px -8px color-mix(in srgb, var(--ink) 45%, transparent);
   rotate: var(--tilt);
 }
 
