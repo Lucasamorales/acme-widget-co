@@ -5,6 +5,7 @@ import { ProductList } from './components/ProductList';
 import { useBasket } from './hooks/use-basket';
 import { useRequest } from './hooks/use-request';
 
+/** The basket page: product tickets on one side, the receipt on the other. */
 export function App() {
   // fetchProducts is a module-level function, so its identity never changes
   // and the catalogue loads once.
@@ -27,7 +28,7 @@ export function App() {
       </header>
 
       <div className="layout">
-        <ProductList products={products} onAdd={basket.add} />
+        <ProductList products={products} quantities={basket.quantities} onAdd={basket.add} />
         <BasketPanel
           catalogue={products.data?.products ?? []}
           quantities={basket.quantities}

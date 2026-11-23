@@ -1,24 +1,32 @@
+/* Till slip design. Tokens first; every colour, font and motion value used below comes from here. */
 :root {
-  --bg: #f5f6f8;
-  --surface: #ffffff;
-  --text: #1c2430;
-  --muted: #5f6b7a;
-  --border: #e2e6ec;
-  --accent: #2f5bea;
-  --accent-hover: #2249c9;
-  --danger: #b42318;
-  --danger-bg: #fef3f2;
-  --radius: 12px;
+  --counter: #e6e1d5; /* page background: the shop counter the receipt sits on */
+  --paper: #fffdf7;
+  --swatch-card: #ffffff;
+  --ink: #1d1b16;
+  --ink-muted: #6b665a;
+  --ink-soft: #45423a;
+  --rule-soft: #cfc8b8;
+  --offer: #c8312a;
+  --offer-strong: #a3261f;
+  --success: #2f8f4e;
+  --widget-red: #d8392b;
+  --widget-green: #2f8f4e;
+  --widget-blue: #2f5bea;
+  --widget-unknown: #b9b2a2; /* a product added to the catalogue before it gets a colour below */
 
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
-  color: var(--text);
-  background: var(--bg);
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --radius-ticket: 4px;
+  --radius-control: 2px;
+  --shadow-ticket: 0 1px 0 var(--rule-soft), 0 12px 24px -20px rgb(29 27 22 / 60%);
+  --shadow-receipt: drop-shadow(0 18px 18px rgb(29 27 22 / 18%));
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  font-family: var(--font-mono);
+  font-size: 14px;
   line-height: 1.5;
+  color: var(--ink);
+  background: var(--counter);
 }
 
 * {
@@ -35,147 +43,502 @@ p {
   margin: 0;
 }
 
-.page {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 40px 16px;
-}
-
-.header {
-  margin-bottom: 24px;
-}
-
-.header h1 {
-  font-size: 1.75rem;
-}
-
-.layout {
-  display: grid;
-  gap: 24px;
-  grid-template-columns: 1fr;
-  align-items: start;
-}
-
-@media (min-width: 768px) {
-  .layout {
-    grid-template-columns: 3fr 2fr;
-  }
-}
-
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-}
-
-.panel h2 {
-  font-size: 1.1rem;
-  margin-bottom: 16px;
-}
-
-.muted {
-  color: var(--muted);
-}
-
 ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.products {
-  display: grid;
-  gap: 12px;
+.muted {
+  color: var(--ink-muted);
 }
 
-.product {
+/* Page */
+
+.page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.header {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  gap: 4px 24px;
+  padding-bottom: 14px;
+  margin-bottom: 32px;
+  border-bottom: 2px solid var(--ink);
 }
 
-.product-name {
-  font-weight: 600;
+.header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
 }
+
+.header p {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.layout {
+  display: grid;
+  gap: 32px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .page {
+    padding: 48px 40px 64px;
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 400px;
+  }
+}
+
+/* Buttons */
 
 button {
   font: inherit;
   cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  background: var(--accent);
-  color: #fff;
-}
-
-button:hover {
-  background: var(--accent-hover);
 }
 
 button:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  outline: 3px solid color-mix(in srgb, var(--ink) 40%, transparent);
   outline-offset: 2px;
+}
+
+.button-primary {
+  min-height: 44px;
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--radius-control);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.button-primary:hover {
+  background: var(--offer);
+}
+
+.button-primary:active {
+  translate: 0 1px;
+}
+
+.stepper {
+  display: flex;
+  gap: 6px;
+}
+
+.stepper-button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.stepper-button:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* Products: one ticket per product */
+
+.products-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.tickets {
+  display: grid;
+  gap: 14px;
+}
+
+.ticket {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  background: var(--paper);
+  border-radius: var(--radius-ticket);
+  box-shadow: var(--shadow-ticket);
+}
+
+.ticket-stub {
+  display: grid;
+  place-items: center;
+  padding: 16px 8px;
+  border-right: 2px dashed var(--counter); /* perforation between stub and ticket */
+}
+
+.ticket-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px 18px;
+}
+
+.ticket-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 12px;
+}
+
+.ticket-code {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.ticket-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.product-name {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.price {
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.offer-stamp {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border: 2px solid var(--offer);
+  color: var(--offer);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  rotate: -2deg;
+}
+
+/* Swatch chip: a paint-sample card in the product's colour */
+
+.swatch {
+  --swatch: var(--widget-unknown);
+  --tilt: -3deg;
+
+  display: flex;
+  flex-direction: column;
+  width: 64px;
+  background: var(--swatch-card);
+  box-shadow:
+    0 1px 0 var(--rule-soft),
+    0 8px 14px -8px rgb(29 27 22 / 45%);
+  rotate: var(--tilt);
+}
+
+.swatch[data-code='R01'] {
+  --swatch: var(--widget-red);
+  --tilt: -6deg;
+}
+
+.swatch[data-code='G01'] {
+  --swatch: var(--widget-green);
+  --tilt: 4deg;
+}
+
+.swatch[data-code='B01'] {
+  --swatch: var(--widget-blue);
+}
+
+/* The swatch is remounted on every quantity change, so this replays on each add. */
+.swatch[data-in-basket='true'] {
+  animation: thunk 380ms var(--ease-spring);
+}
+
+.swatch-colour {
+  height: 64px;
+  margin: 4px 4px 0;
+  background: var(--swatch);
+}
+
+.swatch-code {
+  padding: 4px 6px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+@media (min-width: 768px) {
+  .ticket {
+    grid-template-columns: 120px minmax(0, 1fr);
+  }
+
+  .swatch {
+    width: 76px;
+  }
+}
+
+/* Basket: a till receipt */
+
+.receipt {
+  min-width: 0;
+  filter: var(--shadow-receipt);
+}
+
+.receipt-paper {
+  padding: 28px 24px 24px;
+  background: var(--paper);
+}
+
+/* Torn edge: a row of triangles in the paper colour. */
+.receipt-edge {
+  height: 10px;
+  background: conic-gradient(from -45deg at 50% 100%, var(--paper) 90deg, transparent 0) 0 0 / 20px
+    10px repeat-x;
+}
+
+.receipt-title {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.receipt-count {
+  margin-top: 4px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.receipt-empty {
+  padding: 20px 0;
+  text-align: center;
+  color: var(--ink-muted);
+}
+
+.rule-dashed {
+  margin: 18px 0;
+  border: none;
+  border-top: 1.5px dashed var(--ink);
 }
 
 .lines {
   display: grid;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 12px;
 }
 
 .line {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
+  animation: print-in 340ms ease-out;
 }
 
-.stepper {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.line-name {
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-.stepper button {
-  width: 32px;
-  height: 32px;
-  padding: 0;
+.line-detail {
+  font-size: 12px;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
 }
+
+/* Totals */
 
 .totals {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  row-gap: 4px;
-  margin: 0;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   transition: opacity 150ms;
-}
-
-.totals dd {
-  margin: 0;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
 }
 
 .totals.updating {
   opacity: 0.5;
 }
 
-.grand-total {
+.totals-figures {
+  position: relative; /* anchors the free-delivery stamp */
+}
+
+.totals-list {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  row-gap: 6px;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.totals-list dt {
+  text-transform: uppercase;
+}
+
+.totals-list dd {
+  margin: 0;
+  text-align: right;
+}
+
+.totals-list .offer {
+  color: var(--offer);
+}
+
+.totals-list .grand-total {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 3px double var(--ink);
   font-weight: 700;
-  font-size: 1.15rem;
-  padding-top: 8px;
+}
+
+.totals-list dt.grand-total {
+  font-size: 18px;
+}
+
+.totals-list dd.grand-total {
+  padding-top: 6px;
+  font-size: 30px;
+}
+
+/* Keyed on the total, so it remounts and bumps whenever the server sends a new one. */
+.total-amount {
+  display: inline-block;
+  animation: bump 360ms ease-out;
+}
+
+.footnote-ref {
+  font-weight: 700;
+}
+
+.footnote {
+  padding-top: 10px;
+  border-top: 1px dotted var(--ink);
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+/* In CSS, not markup, so the footnote's text is just the sentence. */
+.footnote::before {
+  content: '* ';
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.free-stamp {
+  position: absolute;
+  bottom: 2px;
+  left: 64px;
+  padding: 4px 10px;
+  border: 3px double var(--success);
+  color: var(--success);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+  rotate: -9deg;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  animation: slam 420ms var(--ease-spring);
+}
+
+.nudge {
+  padding: 10px 12px;
+  border: 1.5px dashed var(--offer);
+  color: var(--offer-strong);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .error {
-  color: var(--danger);
-  background: var(--danger-bg);
-  border-radius: 8px;
-  padding: 12px;
+  padding: 12px 14px;
+  border: 2px solid var(--offer);
+  background: var(--paper);
+  color: var(--offer-strong);
+  font-weight: 500;
+}
+
+/* Motion */
+
+@keyframes print-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes bump {
+  35% {
+    transform: translateY(-3px) scale(1.06);
+  }
+}
+
+/* Uses `scale`, not `transform`, so the swatch keeps its `rotate` tilt while it plays. */
+@keyframes thunk {
+  from {
+    scale: 1.3;
+    opacity: 0.2;
+  }
+  55% {
+    scale: 0.94;
+    opacity: 1;
+  }
+}
+
+@keyframes slam {
+  from {
+    scale: 2.4;
+    opacity: 0;
+  }
+  60% {
+    scale: 0.92;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

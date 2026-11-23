@@ -5,12 +5,17 @@ import { App } from './App';
 
 const PRODUCTS: ProductsResponse = {
   products: [
-    { code: 'R01', name: 'Red Widget', price: 3295, offerLabels: [] },
+    {
+      code: 'R01',
+      name: 'Red Widget',
+      price: 3295,
+      offerLabels: ['Buy one, get the second half price'],
+    },
     { code: 'B01', name: 'Blue Widget', price: 795, offerLabels: [] },
   ],
 };
 
-/** A quote whose total is easy to recognise in the page. */
+/** A quote whose total is easy to recognise in the page, with no hints. */
 function quoteWithTotal(total: number): QuoteResponse {
   return {
     subtotal: total,
@@ -21,6 +26,19 @@ function quoteWithTotal(total: number): QuoteResponse {
     offerSavings: [],
   };
 }
+
+/** A quote that carries both hints: a delivery footnote and an offer nudge. */
+const QUOTE_WITH_HINTS: QuoteResponse = {
+  subtotal: 3295,
+  discount: 0,
+  delivery: 495,
+  total: 3790,
+  nextDeliveryBand: { amountToReach: 1705, charge: 295 },
+  offerSavings: [{ productCode: 'R01', saving: 1648 }],
+};
+
+const FOOTNOTE = '$17.05 more and delivery drops to $2.95.';
+const NUDGE = 'Add 1 more Red Widget to save $16.48';
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -124,5 +142,38 @@ describe('App', () => {
     render(<App />);
 
     expect((await screen.findByRole('alert')).textContent).toContain('Can’t reach the server');
+  });
+
+  it('advertises an offer on the product it applies to', async () => {
+    stubServer();
+    render(<App />);
+
+    expect(await screen.findByText('Buy one, get the second half price')).toBeDefined();
+  });
+
+  it('explains how much more to spend for cheaper delivery, and what one more unit saves', async () => {
+    const { answerQuote } = stubServer();
+    render(<App />);
+    await addRedWidget();
+    await answerQuote(1, json(QUOTE_WITH_HINTS));
+
+    expect(screen.getByText(FOOTNOTE)).toBeDefined();
+    expect(screen.getByText(NUDGE)).toBeDefined();
+  });
+
+  it('removes the hints when the next quote fails, so they never describe another basket', async () => {
+    const { answerQuote } = stubServer();
+    render(<App />);
+    await addRedWidget();
+    await answerQuote(1, json(QUOTE_WITH_HINTS));
+
+    await addRedWidget();
+    await answerQuote(
+      2,
+      json({ error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' } }, 500),
+    );
+
+    expect(screen.queryByText(FOOTNOTE)).toBeNull();
+    expect(screen.queryByText(NUDGE)).toBeNull();
   });
 });
