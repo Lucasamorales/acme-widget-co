@@ -99,7 +99,9 @@ ul {
   }
 
   .layout {
-    grid-template-columns: minmax(0, 1fr) 400px;
+    /* The receipt is 400 px at most, but just above the breakpoint a fixed
+       400 px would squeeze the tickets until their buttons overflow. */
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 40%, 400px);
   }
 }
 
@@ -217,6 +219,7 @@ button:focus-visible {
 
 .ticket-footer {
   display: flex;
+  flex-wrap: wrap; /* the button moves under the price rather than out of the ticket */
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -388,14 +391,10 @@ button:focus-visible {
   opacity: 0.5;
 }
 
-.totals-figures {
-  position: relative; /* anchors the free-delivery stamp */
-}
-
 .totals-list {
   display: grid;
   grid-template-columns: 1fr auto;
-  row-gap: 6px;
+  gap: 6px 16px;
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
@@ -413,20 +412,38 @@ button:focus-visible {
   color: var(--offer);
 }
 
-.totals-list .grand-total {
+/* A wrapping line, not a grid row, so nothing in it can overflow or overlap:
+   when the label, stamp and amount don't fit side by side, the stamp moves
+   under the label, then the amount moves to its own line. */
+.total-row {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
   margin-top: 8px;
   padding-top: 12px;
   border-top: 3px double var(--ink);
   font-weight: 700;
 }
 
-.totals-list dt.grand-total {
+.total-row dt {
+  /* A zero basis lets the label cell shrink to its widest word or stamp
+     before the amount is pushed onto its own line. */
+  flex: 1 1 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px; /* also room for the stamp's tilted corners */
   font-size: 18px;
 }
 
-.totals-list dd.grand-total {
-  padding-top: 6px;
+.total-row dd {
+  margin-left: auto; /* stays right-aligned when wrapped onto its own line */
+  min-width: 0;
   font-size: 30px;
+  overflow-wrap: anywhere; /* last resort: an amount wider than the receipt breaks, not spills */
 }
 
 /* Keyed on the total, so it remounts and bumps whenever the server sends a new one. */
@@ -454,9 +471,6 @@ button:focus-visible {
 }
 
 .free-stamp {
-  position: absolute;
-  bottom: 2px;
-  left: 64px;
   padding: 4px 10px;
   border: 3px double var(--success);
   color: var(--success);

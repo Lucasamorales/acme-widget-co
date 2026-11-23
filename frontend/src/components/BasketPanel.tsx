@@ -91,47 +91,53 @@ function Totals({ quote, catalogue }: TotalsProps) {
   const { subtotal, discount, delivery, total, nextDeliveryBand, offerSavings } = quote.data;
   return (
     <div className={quote.isLoading ? 'totals updating' : 'totals'} aria-busy={quote.isLoading}>
-      <div className="totals-figures">
-        <dl className="totals-list">
-          <dt>Subtotal</dt>
-          <dd>{formatCents(subtotal)}</dd>
-          {/* A comparison, not `discount && …`: with a number, React would render a stray "0". */}
-          {discount > 0 && (
-            <>
-              <dt className="offer">Offer discount</dt>
-              <dd className="offer">−{formatCents(discount)}</dd>
-            </>
+      <dl className="totals-list">
+        <dt>Subtotal</dt>
+        <dd>{formatCents(subtotal)}</dd>
+        {/* A comparison, not `discount && …`: with a number, React would render a stray "0". */}
+        {discount > 0 && (
+          <>
+            <dt className="offer">Offer discount</dt>
+            <dd className="offer">−{formatCents(discount)}</dd>
+          </>
+        )}
+        <dt>Delivery</dt>
+        <dd>
+          {delivery === 0 ? 'Free' : formatCents(delivery)}
+          {nextDeliveryBand && (
+            <span className="footnote-ref" aria-hidden="true">
+              *
+            </span>
           )}
-          <dt>Delivery</dt>
-          <dd>
-            {delivery === 0 ? 'Free' : formatCents(delivery)}
-            {nextDeliveryBand && (
-              <span className="footnote-ref" aria-hidden="true">
-                *
+        </dd>
+        {/* HTML allows a <div> around one dt/dd pair. It lets this row wrap, so a
+            total of any length moves to its own line instead of overflowing, and
+            the stamp, kept in the layout flow, can never cover the amount. */}
+        <div className="total-row">
+          <dt>
+            <span>Total</span>
+            {/* The quote shown can be the previous one while a new one loads. After
+                the first Add that is the empty basket's quote, which also has
+                delivery 0, so `subtotal > 0` stops the stamp from landing on an order
+                that has not reached free delivery. Checking the quote, not
+                `isLoading`, keeps the stamp mounted (and not slamming again) while
+                re-quoting in the free band. Hidden from screen readers because the
+                Delivery row already says "Free". */}
+            {subtotal > 0 && delivery === 0 && (
+              <span className="free-stamp" aria-hidden="true">
+                Free
+                <br />
+                delivery
               </span>
             )}
-          </dd>
-          <dt className="grand-total">Total</dt>
-          <dd className="grand-total" aria-live="polite">
+          </dt>
+          <dd aria-live="polite">
             <span key={total} className="total-amount">
               {formatCents(total)}
             </span>
           </dd>
-        </dl>
-        {/* The quote shown can be the previous one while a new one loads. After the
-            first Add that is the empty basket's quote, which also has delivery 0,
-            so `subtotal > 0` stops the stamp from landing on an order that has not
-            reached free delivery. Checking the quote, not `isLoading`, keeps the
-            stamp mounted (and not slamming again) while re-quoting in the free band.
-            Hidden from screen readers because the Delivery row already says "Free". */}
-        {subtotal > 0 && delivery === 0 && (
-          <p className="free-stamp" aria-hidden="true">
-            Free
-            <br />
-            delivery
-          </p>
-        )}
-      </div>
+        </div>
+      </dl>
 
       {nextDeliveryBand && <DeliveryFootnote nextBand={nextDeliveryBand} />}
 

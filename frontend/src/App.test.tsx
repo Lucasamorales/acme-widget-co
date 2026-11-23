@@ -85,7 +85,7 @@ async function addRedWidget(): Promise<void> {
 
 /** The amount in the "Total" row, or undefined when no total is shown. */
 function displayedTotal(): string | undefined {
-  return screen.queryByText('Total')?.nextElementSibling?.textContent ?? undefined;
+  return screen.queryByText('Total')?.closest('dt')?.nextElementSibling?.textContent ?? undefined;
 }
 
 /**
